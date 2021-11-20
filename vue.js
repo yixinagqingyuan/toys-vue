@@ -1,7 +1,6 @@
 
 import Observer from "./observer.js";
 import Compiler from './compiler.js';
-Observer = 1;
 export default class Vue {
   constructor(options) {
     //1、首先进行第一步，对传入参数做处理
@@ -34,7 +33,6 @@ export default class Vue {
     this.$options = options;
     this.$data = options.data;
     this.proxy(this.$data);
-    this.$render = new Compiler(this.$options.el);
     this.$observer = new Observer(this.$data, this.$render);
     if (this.$options.el) {
       this.$mount(this.$options.el);
