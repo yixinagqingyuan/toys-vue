@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="app">
+    <span>{{msg}}</span>
+    <div>
+      <span>{{age}}</span>
+      <span>{{age}}</span>
+    </div>
+    <input type="text" v-model="msg">
+  </div>
+  <script type="module">
+    // 首先利用现在浏览器支持模块化建立模块化代码
+    // 同志们大家好，我是码道师
+    // vue在出世之后迅速蹿红，现在已经成为了大多数公司的选择， 很多人其实那也在前赴后继的研究他的原理，
+    // 对，我也是其中的一员 研究玩之后，觉得不吐不快，干脆做个视频，分享给大家
+    // 了解vue2 的同志们都知道，vue 他的响应式系统其实是，基于Object.defineProperty ，那么他究竟是如实现的呢，我们代码见真章
+
+    //1、我们用类似tdd 的方式去慢慢构造一个有些有肉的简写版本的vue
+
+
+    // 好下面我们开始开始，时间不多了，在vue 源码中，需要先new 一下
+
+    // 接下来我们导入
+    import Vue from './vue.js'
+    window.vue = new Vue({
+      el: '#app',
+      data: {
+        msg: 'abc',
+        age: 10
+      }
+    })
+  </script>
+</body>
+
+</html>
