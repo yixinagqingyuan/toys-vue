@@ -1,0 +1,23 @@
+{
+  "name": "toys-vue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "compiler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "http-server -c-1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yixinagqingyuan/toys-vue.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yixinagqingyuan/toys-vue/issues"
+  },
+  "homepage": "https://github.com/yixinagqingyuan/toys-vue#readme",
+  "devDependencies": {
+    "http-server": "^14.0.0"
+  }
+}
