@@ -4,6 +4,7 @@ const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`;
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
 const startTagOpen = new RegExp(`^<${qnameCapture}`);// 匹配开始标签
 const startTagClose = /^\s*(\/?)>/; //匹配开始标签的结束就是'>'
+const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`);
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/; // 匹配普通的属性
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;// 匹配vue 内置的一些指令attribute 和属性
 export default class Compiler {
@@ -35,15 +36,36 @@ export default class Compiler {
     while (this.html) {
       //源码中利用做了很多兼容处理，比如处理注释内容，处理Doctype，处理条件注释，我们主要为了理解，暂不处理
       last = this.html;
-      // 如果遇见开始标签
-      const startTagMatch = this.parseStartTag();
-      console.log(startTagMatch);
-      //如果找到头标签
-      if (startTagMatch) {
-        // 如果找到了，那么就压入栈中等待匹配，利用栈的结构，能找出匹配的接口，// 如果有兴趣可以去刷有效的括号
-        stack.push(startTagMatch);
+      let textEnd = last.indexOf('<');
+      if (textEnd === 0) {
+        // 如果遇见开始标签
+        const startTagMatch = this.parseStartTag();
+        //如果找到头标签
+        if (startTagMatch) {
+          // 如果找到了，那么就压入栈中等待匹配，利用栈的结构，能找出匹配的接口，// 如果有兴趣可以去刷有效的括号跟这个原理类似
+          stack.push(startTagMatch);
+          // 并且跳出循环
+          continue;
+        }
       }
-      return;
+      let text, rest, next;
+      // 这时候的操作是为了去除字符串之间的空格
+      if (textEnd >= 0) {
+        rest = this.html.slice(textEnd);
+        // 源码中有很多判断，比如包含< 符号有可能是个文本所以需要剔除，在这里不作为我们做流程处理
+        text = this.html.substring(0, textEnd);
+      }
+      //小于0 那么就只可能是-1 也就是通篇找不到一个标签了，那么就只可能是个文本
+      if (textEnd < 0) {
+        // 拿到文本部分
+        rest = html.slice(textEnd);
+        console.log(rest);
+      }
+      // 这些空节点需要删除掉，所以前移字符串
+      if (text) {
+        this.advance(text.length);
+      }
+
     }
   }
   parseStartTag() {
