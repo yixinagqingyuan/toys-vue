@@ -18,10 +18,15 @@ export default class Compiler {
   }
   // parse 转换为ast
   parse() {
-    const stack = [];
-    return this.parseHTML({
-
+    const stack = [];// 
+    let root; // 存储ats 节点的root
+    let currentParent;
+    this.parseHTML({
+      chars(text, start, end) {
+        console.log(text, start, end);
+      }
     });
+    return root;
   }
   // 做一些优化，达到可以生成代码的地步
   optimize() { }
@@ -49,7 +54,7 @@ export default class Compiler {
         }
       }
       let text, rest, next;
-      // 这时候的操作是为了去除字符串之间的空格
+      // 这时候的操作是为了去除标签之间的空格
       if (textEnd >= 0) {
         rest = this.html.slice(textEnd);
         // 源码中有很多判断，比如包含< 符号有可能是个文本所以需要剔除，在这里不作为我们做流程处理
@@ -59,13 +64,16 @@ export default class Compiler {
       if (textEnd < 0) {
         // 拿到文本部分
         rest = html.slice(textEnd);
-        console.log(rest);
+
       }
       // 这些空节点需要删除掉，所以前移字符串
       if (text) {
         this.advance(text.length);
       }
-
+      // 此时就需要处理文本内容，变成ast 
+      if (options.chars && text) {
+        options.chars(text, index - text.length, index);
+      }
     }
   }
   parseStartTag() {
