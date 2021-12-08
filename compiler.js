@@ -1,5 +1,6 @@
 
 import { unicodeRegExp } from './regExp.js';
+import { isUnaryTag, createASTElement } from './util.js';
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`;
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
 const startTagOpen = new RegExp(`^<${qnameCapture}`);// 匹配开始标签
@@ -7,6 +8,7 @@ const startTagClose = /^\s*(\/?)>/; //匹配开始标签的结束就是'>'
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`);
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/; // 匹配普通的属性
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;// 匹配vue 内置的一些指令attribute 和属性
+
 export default class Compiler {
   constructor(template) {
     // 保存当前模板字符串
@@ -22,8 +24,22 @@ export default class Compiler {
     let root; // 存储ats 节点的root
     let currentParent;
     this.parseHTML({
+      start(tag, attrs, unary, start, end) {
+        // 想获取的element 变成ast 
+        let element = createASTElement(tag, attrs, currentParent);
+        // 接下来源码中做了大量的兼容等处理，这里我们主要理一理，主流程暂不解析
+        // 如果没有根节点 ，给根节点赋值给当前节点
+        if (!root) {
+          root = element;
+        }
+
+      },
       chars(text, start, end) {
         console.log(text, start, end);
+        debugger;
+      },
+      end(tag, start, end) {
+
       }
     });
     return root;
@@ -47,8 +63,12 @@ export default class Compiler {
         const startTagMatch = this.parseStartTag();
         //如果找到头标签
         if (startTagMatch) {
+          // 首先判断是不是自封闭标签，如果是，那么就不用压栈，如果不是那么就需要压栈处理
           // 如果找到了，那么就压入栈中等待匹配，利用栈的结构，能找出匹配的接口，// 如果有兴趣可以去刷有效的括号跟这个原理类似
-          stack.push(startTagMatch);
+          if (!isUnaryTag(startTagMatch.tagName)) {
+            stack.push(startTagMatch);
+          }
+          this.handleStartTag(options, startTagMatch);
           // 并且跳出循环
           continue;
         }
@@ -72,7 +92,10 @@ export default class Compiler {
       }
       // 此时就需要处理文本内容，变成ast 
       if (options.chars && text) {
-        options.chars(text, index - text.length, index);
+        // 在源码中，由于在不同的文件中，所以需要通过传入配置的方式去拿到最后的处理节点，返回，当然也可以直接在当前文件中返回，
+        // 我认为作者之所以这样做，是为了遵循一些设计原则，和设计模式，将字符串处理逻辑和结果的生成解耦，这样就能通用，或者实现关注度分离
+        // 我们这里虽然用面向对象的思想写的，理论上用不上这些套路，但是，为了体会大佬们的思想，我还是决定这样做了
+        options.chars(text, this.index - text.length, this.index);
       }
     }
   }
@@ -111,6 +134,13 @@ export default class Compiler {
         match.attrs = attrs;
         return match;
       }
+    }
+  }
+  // 处理开始标签
+  handleStartTag(options, startTagMatch) {
+    const { attrs, end, start, tagName } = startTagMatch;
+    if (options.start) {
+      options.start(attrs, end, start, tagName);
     }
   }
   // 定义辅助函数,改变在模板中的位置
