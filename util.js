@@ -1,5 +1,5 @@
 
-import { makeAttrsMap, makeMap } from './tools.js';
+import { makeAttrsMap, makeMap, extend, getAndRemoveAttr } from './tools.js';
 // 判断是不是普通自封闭标签
 export const isUnaryTag = makeMap(
   'area,base,br,col,embed,frame,hr,img,input,isindex,keygen,' +
@@ -22,4 +22,14 @@ export function createASTElement(
     children: []
   };
 }
-
+// 处理vfor 的情况
+export function processFor(el) {
+  let exp;
+  if ((exp = getAndRemoveAttr(el, 'v-for'))) {
+    const res = parseFor(exp);
+    if (res) {
+      extend(el, res);
+    }
+  }
+}
+export function

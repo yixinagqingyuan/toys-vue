@@ -27,8 +27,9 @@ export default class Compiler {
       start(tag, attrs, unary, start, end) {
         // 想获取的element 变成ast 
         let element = createASTElement(tag, attrs, currentParent);
-        // 接下来源码中做了大量的兼容等处理，这里我们主要理一理，主流程暂不解析
+        // 接下来源码中做了大量的attr以及兼容的处理，这里我们主要解析v-for 和v-if 
         // 如果没有根节点 ，给根节点赋值给当前节点
+
         if (!root) {
           root = element;
         }
