@@ -1,5 +1,6 @@
 // 提取attr 中的重要信息，其他的都不重要可以舍弃
-export function makeAttrsMap(attrs) {
+export function 
+makeAttrsMap(attrs) {
   const map = {};
   for (let i = 0, l = attrs.length; i < l; i++) {
     map[attrs[i].name] = attrs[i].value;

@@ -10,6 +10,7 @@
 
 <body>
   <div id="app">
+    <span v-if='isTrue'>好好学习天天向上</span>
     <span>{{msg}}</span>
     <div>
       <span>{{age}}</span>
@@ -35,7 +36,8 @@
       el: '#app',
       data: {
         msg: 'abc',
-        age: 10
+        age: 10,
+        isTrue: false
       }
     })
   </script>

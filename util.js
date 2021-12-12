@@ -32,4 +32,9 @@ export function processFor(el) {
     }
   }
 }
-export function
+
+// 处理v-if的情况
+export function processIf(el) {
+  debugger;
+  const exp = getAndRemoveAttr(el, 'v-if');
+}

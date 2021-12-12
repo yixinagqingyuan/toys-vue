@@ -1,6 +1,6 @@
 
 import { unicodeRegExp } from './regExp.js';
-import { isUnaryTag, createASTElement } from './util.js';
+import { isUnaryTag, createASTElement, processFor, processIf } from './util.js';
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`;
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
 const startTagOpen = new RegExp(`^<${qnameCapture}`);// 匹配开始标签
@@ -24,12 +24,14 @@ export default class Compiler {
     let root; // 存储ats 节点的root
     let currentParent;
     this.parseHTML({
+      // 其实start 就给节点的token拿到后，做ast 的转义
       start(tag, attrs, unary, start, end) {
-        // 想获取的element 变成ast 
+        // 想获取的element 变成ast，并且加入一些修饰
         let element = createASTElement(tag, attrs, currentParent);
         // 接下来源码中做了大量的attr以及兼容的处理，这里我们主要解析v-for 和v-if 
+        // processFor(element);
+        processIf(element);
         // 如果没有根节点 ，给根节点赋值给当前节点
-
         if (!root) {
           root = element;
         }
@@ -64,12 +66,14 @@ export default class Compiler {
         const startTagMatch = this.parseStartTag();
         //如果找到头标签
         if (startTagMatch) {
+          // 判断是不是自封闭标签,通过取反向，给他变成布尔类型
+          const unary = !isUnaryTag(startTagMatch.tagName);
           // 首先判断是不是自封闭标签，如果是，那么就不用压栈，如果不是那么就需要压栈处理
           // 如果找到了，那么就压入栈中等待匹配，利用栈的结构，能找出匹配的接口，// 如果有兴趣可以去刷有效的括号跟这个原理类似
-          if (!isUnaryTag(startTagMatch.tagName)) {
+          if (!unary) {
             stack.push(startTagMatch);
           }
-          this.handleStartTag(options, startTagMatch);
+          this.handleStartTag(options, startTagMatch, unary);
           // 并且跳出循环
           continue;
         }
@@ -138,10 +142,10 @@ export default class Compiler {
     }
   }
   // 处理开始标签
-  handleStartTag(options, startTagMatch) {
-    const { attrs, end, start, tagName } = startTagMatch;
+  handleStartTag(options, startTagMatch, unary) {
+    const { tagName, attrs, end, start } = startTagMatch;
     if (options.start) {
-      options.start(attrs, end, start, tagName);
+      options.start(tagName, attrs, unary, end, start);
     }
   }
   // 定义辅助函数,改变在模板中的位置
